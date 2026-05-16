@@ -10,21 +10,67 @@ HotForge is that.
 
 ## Status
 
-**Windows-first skeleton.** The engine is OS-agnostic and the Windows input
-backend is a real low-level keyboard hook. Linux (X11/Wayland) and macOS
-backends are stubs — they are the contribution surface, not missing work
-hidden under the rug. See [docs/BACKLOG.md](docs/BACKLOG.md).
+**Windows and Linux work.** The engine is OS-agnostic. Both the Windows
+(`WH_KEYBOARD_LL` hook) and Linux (evdev grab + uinput) backends are real and
+**suppress** matched hotkeys AutoHotkey-style — the keystroke never reaches the
+desktop or other apps. macOS is still a stub: the contribution surface, not
+work hidden under the rug. See [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Pieces
 
 - **`src/HotForge.Core`** — OS-agnostic engine. A rule = a trigger + an
   action. Triggers and actions are independent, registered units.
 - **`src/HotForge.Windows`** — real `WH_KEYBOARD_LL` global hook.
-- **`src/HotForge.Linux` / `.Mac`** — backend stubs (backlog).
-- **`src/HotForge.App`** — console host: loads a config, wires backend +
-  engine, runs the OS message loop. A tray UI / Avalonia editor is backlog.
+- **`src/HotForge.Linux`** — real backend: exclusively grabs the keyboard
+  (`EVIOCGRAB`), re-injects through `/dev/uinput`, swallows matched hotkeys.
+  No X11/Wayland dependency.
+- **`src/HotForge.Mac`** — backend stub (backlog).
+- **`src/HotForge.App`** — console host: loads a script, wires backend +
+  engine, runs.
+- **`src/HotForge.Gui`** — Avalonia desktop app: a script editor with
+  New / Open / Save / Run. No tray icon — on Linux it runs as a plain window.
 
-## Quick start (Windows)
+## Scripts
+
+A HotForge script is a JSON rules document (no bespoke DSL) saved with the
+`.hotforge` extension. The GUI reads, edits, and writes these files; the
+console host takes one as its argument. See
+[config.sample.json](src/HotForge.App/config.sample.json) for the format.
+
+## Quick start
+
+GUI (recommended — built-in editor):
+
+```bash
+dotnet run --project src/HotForge.Gui
+# write/open a .hotforge script, then click ▶ Run
+```
+
+Console host:
+
+```bash
+dotnet run --project src/HotForge.App -- src/HotForge.App/config.sample.json
+```
+
+### Linux setup
+
+The backend needs read access to `/dev/input` and write access to
+`/dev/uinput`. Either run with `sudo`, or grant your user access once:
+
+```bash
+sudo usermod -aG input $USER          # then log out and back in
+sudo modprobe uinput
+echo 'uinput' | sudo tee /etc/modules-load.d/uinput.conf
+echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' \
+  | sudo tee /etc/udev/rules.d/99-uinput.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+While a script runs, the keyboard is grabbed exclusively and re-injected;
+**Ctrl+C / Stop releases it.** Keep an SSH session as an escape hatch if a
+script hangs.
+
+### Windows
 
 ```bash
 dotnet run --project src/HotForge.App

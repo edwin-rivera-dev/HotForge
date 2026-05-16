@@ -44,21 +44,29 @@ public sealed class RuleEngine
 
     public void Start()
     {
-        _backend.KeyEvent += OnKeyEvent;
+        _backend.OnKey = OnKeyEvent;
         _backend.Start();
         _log($"engine started on {_backend.Platform} with {_rules.Count} rule(s)");
     }
 
-    /// <summary>Exposed for engine tests: drive synthetic events without an OS.</summary>
-    public void OnKeyEvent(KeyEvent e)
+    /// <summary>
+    /// Handle one key event: run every matching rule's action. Returns
+    /// <c>true</c> if any rule matched, signalling the backend to consume
+    /// (swallow) the event so the OS never sees it. Also the test entry point
+    /// for driving synthetic events without an OS.
+    /// </summary>
+    public bool OnKeyEvent(KeyEvent e)
     {
         var state = new TriggerState();
+        var matched = false;
         foreach (var rule in _rules)
         {
             if (!_triggers.TryGetValue(rule.TriggerKind, out var trigger))
                 continue;
             if (!trigger.Matches(e, rule, state))
                 continue;
+
+            matched = true;
             if (!_actions.TryGetValue(rule.ActionKind, out var action))
             {
                 _log($"no action registered for kind '{rule.ActionKind}'");
@@ -68,5 +76,6 @@ public sealed class RuleEngine
             var ctx = new ActionContext { Backend = _backend, Log = _log };
             _ = action.ExecuteAsync(rule, ctx);
         }
+        return matched;
     }
 }

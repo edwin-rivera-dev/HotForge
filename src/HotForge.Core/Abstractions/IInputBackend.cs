@@ -10,8 +10,13 @@ public interface IInputBackend : IDisposable
 {
     string Platform { get; }
 
-    /// <summary>Raised for every observed key event after OS→canonical mapping.</summary>
-    event Action<KeyEvent>? KeyEvent;
+    /// <summary>
+    /// Invoked for every observed key event after OS→canonical mapping.
+    /// Return <c>true</c> to consume the event so the OS and other apps never
+    /// see it (AutoHotkey-style suppression). Backends that cannot suppress
+    /// may ignore the return value.
+    /// </summary>
+    Func<KeyEvent, bool>? OnKey { get; set; }
 
     /// <summary>Begin capturing input (installs the OS hook). Idempotent.</summary>
     void Start();
