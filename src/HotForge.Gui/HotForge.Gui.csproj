@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>HotForge.Gui</RootNamespace>
+    <AssemblyName>hotforge-gui</AssemblyName>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotForge.Core\HotForge.Core.csproj" />
+    <ProjectReference Include="..\HotForge.Linux\HotForge.Linux.csproj" />
+    <ProjectReference Include="..\HotForge.Windows\HotForge.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\HotForge.App\config.sample.json" Link="config.sample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,10 +1,10 @@
 using System.Text.Json;
 using HotForge.Core.Model;
 
-namespace HotForge.App;
+namespace HotForge.Core;
 
 /// <summary>Parses config.json into AutomationRules. Format: see config.sample.json.</summary>
-internal static class ConfigLoader
+public static class ConfigLoader
 {
     public static IReadOnlyList<AutomationRule> Load(string path)
     {

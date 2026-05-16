@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using HotForge.App;
 using HotForge.Core;
 using HotForge.Core.Abstractions;
+using HotForge.Linux;
 using HotForge.Windows;
 
 var configPath = args.Length > 0 ? args[0] : "config.sample.json";
@@ -13,17 +14,39 @@ if (!File.Exists(configPath))
 
 var rules = ConfigLoader.Load(configPath);
 
-IInputBackend backend = OperatingSystem.IsWindows()
-    ? new WindowsInputBackend()
-    : throw new PlatformNotSupportedException(
-        "Only the Windows backend is implemented. Linux/macOS backends are the "
-        + "contribution surface — see docs/BACKLOG.md.");
+IInputBackend backend;
+if (OperatingSystem.IsWindows())
+    backend = new WindowsInputBackend();
+else if (OperatingSystem.IsLinux())
+    backend = new LinuxInputBackend();
+else
+    throw new PlatformNotSupportedException(
+        "No input backend for this OS. Windows and Linux are implemented; "
+        + "macOS is the contribution surface — see docs/BACKLOG.md.");
 
 var engine = new RuleEngine(backend, rules, log: Console.WriteLine);
-engine.Start();
+try
+{
+    engine.Start();
+}
+catch (InvalidOperationException ex)
+{
+    Console.Error.WriteLine($"input backend unavailable: {ex.Message}");
+    backend.Dispose();
+    return 69;
+}
 
 Console.WriteLine("HotForge running. Press Ctrl+C to quit.");
-MessagePump.Run();
+if (OperatingSystem.IsWindows())
+{
+    MessagePump.Run();
+}
+else
+{
+    using var quit = new ManualResetEventSlim(false);
+    Console.CancelKeyPress += (_, e) => { e.Cancel = true; quit.Set(); };
+    quit.Wait();
+}
 backend.Dispose();
 return 0;
 

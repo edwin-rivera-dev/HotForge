@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\HotForge.Core\HotForge.Core.csproj" />
+    <ProjectReference Include="..\..\src\HotForge.Linux\HotForge.Linux.csproj" />
   </ItemGroup>
 
 </Project>

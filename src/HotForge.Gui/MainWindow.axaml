@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HotForge.Gui.MainWindow"
+        Width="860" Height="580"
+        MinWidth="640" MinHeight="420"
+        Title="HotForge"
+        Background="#0E0F13"
+        FontFamily="Inter, Segoe UI, sans-serif">
+
+  <Window.Styles>
+    <Style Selector="Button.tool">
+      <Setter Property="Padding" Value="16,9" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="#1B1D24" />
+      <Setter Property="Foreground" Value="#E7E9EE" />
+      <Setter Property="BorderBrush" Value="#2A2D37" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#262936" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#6D8BFF" />
+      <Setter Property="Foreground" Value="#0E0F13" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#86A0FF" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="#15171D" />
+      <Setter Property="BorderBrush" Value="#23262F" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="16" />
+    </Style>
+    <Style Selector="TextBlock.cardhead">
+      <Setter Property="Foreground" Value="#9AA0AE" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Foreground" Value="#D6D9E0" />
+      <Setter Property="Padding" Value="8,6" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="22">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="⚡ HotForge" FontSize="26" FontWeight="Bold" Foreground="#F2F3F6" />
+        <TextBlock Text="Cross-platform hotkey &amp; automation engine"
+                   FontSize="13" Foreground="#8A90A0" Margin="0,4,0,0" />
+      </StackPanel>
+      <Border Grid.Column="1" x:Name="StatusPill"
+              Background="#3A2530" CornerRadius="999" Padding="14,7"
+              VerticalAlignment="Center">
+        <TextBlock x:Name="StatusText" Text="● Stopped"
+                   Foreground="#FF8AA0" FontSize="12" FontWeight="SemiBold" />
+      </Border>
+    </Grid>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,0,0,18">
+      <Button x:Name="LoadButton" Classes="tool" Content="Load config…" Click="OnLoad" />
+      <Button x:Name="StartButton" Classes="tool primary" Content="Start" Click="OnStart" />
+      <Button x:Name="StopButton" Classes="tool" Content="Stop" Click="OnStop" IsEnabled="False" />
+    </StackPanel>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,16,*">
+      <Border Grid.Column="0" Classes="card">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="LOADED RULES" />
+          <ListBox x:Name="RulesList" />
+        </DockPanel>
+      </Border>
+      <Border Grid.Column="2" Classes="card">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="ACTIVITY" />
+          <ListBox x:Name="LogList" />
+        </DockPanel>
+      </Border>
+    </Grid>
+
+    <TextBlock Grid.Row="3" x:Name="StatusBar" Margin="2,16,0,0"
+               FontSize="12" Foreground="#6E7484"
+               Text="No config loaded." />
+  </Grid>
+</Window>

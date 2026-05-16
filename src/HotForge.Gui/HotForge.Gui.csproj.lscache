@@ -13,25 +13,25 @@ primary
 lastDtbSucceeded
 
 [properties]
-AssemblyName=HotForge.Core
+AssemblyName=hotforge-gui
 CommandLineArgsForDesignTimeEvaluation=-langversion:latest -define:TRACE
 CompilerGeneratedFilesOutputPath=
 MaxSupportedLangVersion=12.0
 ProjectAssetsFile=<PATH>obj/project.assets.json
-RootNamespace=HotForge.Core
+RootNamespace=HotForge.Gui
 RunAnalyzers=
 RunAnalyzersDuringLiveAnalysis=
 SolutionPath=<PATH>../../HotForge.sln
 TargetFrameworkIdentifier=.NETCoreApp
-TargetPath=<PATH>bin/Debug/net8.0/HotForge.Core.dll
-TargetRefPath=<PATH>obj/Debug/net8.0/ref/HotForge.Core.dll
+TargetPath=<PATH>bin/Debug/net8.0/hotforge-gui.dll
+TargetRefPath=<PATH>obj/Debug/net8.0/ref/hotforge-gui.dll
 TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [commandLineArguments]
 /noconfig
 /unsafe-
 /checked-
-/nowarn:NU1900,1701,1702
+/nowarn:NU1900,CA1416,1701,1702
 /fullpaths
 /nostdlib+
 /errorreport:prompt
@@ -43,9 +43,9 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 /debug:portable
 /filealign:512
 /optimize-
-/out:obj/Debug/net8.0/HotForge.Core.dll
-/refout:obj/Debug/net8.0/refint/HotForge.Core.dll
-/target:library
+/out:obj/Debug/net8.0/hotforge-gui.dll
+/refout:obj/Debug/net8.0/refint/hotforge-gui.dll
+/target:exe
 /warnaserror+
 /utf8output
 /deterministic+
@@ -53,26 +53,13 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-Abstractions/
- Contexts.cs
- IActionExecutor.cs
- IInputBackend.cs
- ITrigger.cs
-Actions/
- RunProcessAction.cs
- TypeTextAction.cs
-ConfigLoader.cs
-Model/
- AutomationRule.cs
- KeyChord.cs
- KeyEvent.cs
- Keys.cs
+App.axaml.cs
+MainWindow.axaml.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
- HotForge.Core.AssemblyInfo.cs
- HotForge.Core.GlobalUsings.g.cs
-RuleEngine.cs
-Triggers/HotkeyTrigger.cs
+ HotForge.Gui.AssemblyInfo.cs
+ HotForge.Gui.GlobalUsings.g.cs
+Program.cs
 
 [metadataReferences]
 ../../../../../../../usr/lib/dotnet/packs/Microsoft.NETCore.App.Ref/8.0.26/ref/net8.0/
@@ -239,6 +226,35 @@ Triggers/HotkeyTrigger.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
+../
+ HotForge.Core/obj/Debug/net8.0/ref/HotForge.Core.dll
+ HotForge.Linux/obj/Debug/net8.0/ref/HotForge.Linux.dll
+ HotForge.Windows/obj/Debug/net8.0/ref/HotForge.Windows.dll
+<NUGET>/
+ avalonia.desktop/11.0.10/lib/net6.0/Avalonia.Desktop.dll
+ avalonia.freedesktop/11.0.10/lib/net6.0/Avalonia.FreeDesktop.dll
+ avalonia.native/11.0.10/lib/net6.0/Avalonia.Native.dll
+ avalonia.remote.protocol/11.0.10/lib/net6.0/Avalonia.Remote.Protocol.dll
+ avalonia.skia/11.0.10/lib/net6.0/Avalonia.Skia.dll
+ avalonia.themes.fluent/11.0.10/lib/net6.0/Avalonia.Themes.Fluent.dll
+ avalonia.win32/11.0.10/lib/net6.0/Avalonia.Win32.dll
+ avalonia.x11/11.0.10/lib/net6.0/Avalonia.X11.dll
+ avalonia/11.0.10/ref/net6.0/
+  Avalonia.Base.dll
+  Avalonia.Controls.dll
+  Avalonia.DesignerSupport.dll
+  Avalonia.Dialogs.dll
+  Avalonia.dll
+  Avalonia.Markup.dll
+  Avalonia.Markup.Xaml.dll
+  Avalonia.Metal.dll
+  Avalonia.MicroCom.dll
+  Avalonia.OpenGL.dll
+ harfbuzzsharp/7.3.0/lib/net6.0/HarfBuzzSharp.dll
+ microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
+ skiasharp/2.88.7/lib/net6.0/SkiaSharp.dll
+ system.io.pipelines/6.0.0/lib/net6.0/System.IO.Pipelines.dll
+ tmds.dbus.protocol/0.15.0/lib/net6.0/Tmds.DBus.Protocol.dll
 
 [analyzerReferences]
 ../../../../../../../usr/lib/dotnet/packs/Microsoft.NETCore.App.Ref/8.0.26/analyzers/dotnet/cs/
@@ -256,9 +272,16 @@ Triggers/HotkeyTrigger.cs
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
+<NUGET>/avalonia/11.0.10/analyzers/dotnet/cs/
+ Avalonia.Analyzers.dll
+ Avalonia.Generators.dll
 
 [analyzerConfigFiles]
 ../../
  ../../../../../usr/lib/dotnet/sdk/8.0.126/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
  .editorconfig
-obj/Debug/net8.0/HotForge.Core.GeneratedMSBuildEditorConfig.editorconfig
+obj/Debug/net8.0/HotForge.Gui.GeneratedMSBuildEditorConfig.editorconfig
+
+[additionalFiles]
+App.axaml
+MainWindow.axaml

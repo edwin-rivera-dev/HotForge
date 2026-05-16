@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>HotForge.Linux</RootNamespace>
+    <AssemblyName>HotForge.Linux</AssemblyName>
+    <SupportedOSPlatform>linux</SupportedOSPlatform>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotForge.Core\HotForge.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="HotForge.Core.Tests" />
+  </ItemGroup>
+
+</Project>

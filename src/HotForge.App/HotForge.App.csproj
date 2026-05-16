@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HotForge.Core\HotForge.Core.csproj" />
+    <ProjectReference Include="..\HotForge.Linux\HotForge.Linux.csproj" />
     <ProjectReference Include="..\HotForge.Windows\HotForge.Windows.csproj" />
   </ItemGroup>
 

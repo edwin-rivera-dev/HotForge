@@ -13,25 +13,25 @@ primary
 lastDtbSucceeded
 
 [properties]
-AssemblyName=HotForge.Core
+AssemblyName=HotForge.Linux
 CommandLineArgsForDesignTimeEvaluation=-langversion:latest -define:TRACE
 CompilerGeneratedFilesOutputPath=
 MaxSupportedLangVersion=12.0
 ProjectAssetsFile=<PATH>obj/project.assets.json
-RootNamespace=HotForge.Core
+RootNamespace=HotForge.Linux
 RunAnalyzers=
 RunAnalyzersDuringLiveAnalysis=
 SolutionPath=<PATH>../../HotForge.sln
 TargetFrameworkIdentifier=.NETCoreApp
-TargetPath=<PATH>bin/Debug/net8.0/HotForge.Core.dll
-TargetRefPath=<PATH>obj/Debug/net8.0/ref/HotForge.Core.dll
+TargetPath=<PATH>bin/Debug/net8.0/HotForge.Linux.dll
+TargetRefPath=<PATH>obj/Debug/net8.0/ref/HotForge.Linux.dll
 TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [commandLineArguments]
 /noconfig
 /unsafe-
 /checked-
-/nowarn:NU1900,1701,1702
+/nowarn:NU1900,CA1416,1701,1702
 /fullpaths
 /nostdlib+
 /errorreport:prompt
@@ -43,8 +43,8 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 /debug:portable
 /filealign:512
 /optimize-
-/out:obj/Debug/net8.0/HotForge.Core.dll
-/refout:obj/Debug/net8.0/refint/HotForge.Core.dll
+/out:obj/Debug/net8.0/HotForge.Linux.dll
+/refout:obj/Debug/net8.0/refint/HotForge.Linux.dll
 /target:library
 /warnaserror+
 /utf8output
@@ -53,26 +53,12 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-Abstractions/
- Contexts.cs
- IActionExecutor.cs
- IInputBackend.cs
- ITrigger.cs
-Actions/
- RunProcessAction.cs
- TypeTextAction.cs
-ConfigLoader.cs
-Model/
- AutomationRule.cs
- KeyChord.cs
- KeyEvent.cs
- Keys.cs
+LinuxInputBackend.cs
+LinuxKeyMap.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
- HotForge.Core.AssemblyInfo.cs
- HotForge.Core.GlobalUsings.g.cs
-RuleEngine.cs
-Triggers/HotkeyTrigger.cs
+ HotForge.Linux.AssemblyInfo.cs
+ HotForge.Linux.GlobalUsings.g.cs
 
 [metadataReferences]
 ../../../../../../../usr/lib/dotnet/packs/Microsoft.NETCore.App.Ref/8.0.26/ref/net8.0/
@@ -239,6 +225,7 @@ Triggers/HotkeyTrigger.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
+../HotForge.Core/obj/Debug/net8.0/ref/HotForge.Core.dll
 
 [analyzerReferences]
 ../../../../../../../usr/lib/dotnet/packs/Microsoft.NETCore.App.Ref/8.0.26/analyzers/dotnet/cs/
@@ -261,4 +248,4 @@ Triggers/HotkeyTrigger.cs
 ../../
  ../../../../../usr/lib/dotnet/sdk/8.0.126/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
  .editorconfig
-obj/Debug/net8.0/HotForge.Core.GeneratedMSBuildEditorConfig.editorconfig
+obj/Debug/net8.0/HotForge.Linux.GeneratedMSBuildEditorConfig.editorconfig

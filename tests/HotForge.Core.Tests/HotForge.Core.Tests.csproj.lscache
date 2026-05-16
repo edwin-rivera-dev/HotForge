@@ -56,6 +56,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 <NUGET>/microsoft.net.test.sdk/17.9.0/build/netcoreapp3.1/Microsoft.NET.Test.Sdk.Program.cs
  @folderNames=..,..,..,..,..,.nuget,packages,microsoft.net.test.sdk,17.9.0,build,netcoreapp3.1
 FakeBackend.cs
+LinuxKeyMapTests.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  HotForge.Core.Tests.AssemblyInfo.cs
@@ -227,7 +228,9 @@ RuleEngineTests.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
-../../src/HotForge.Core/obj/Debug/net8.0/ref/HotForge.Core.dll
+../../src/
+ HotForge.Core/obj/Debug/net8.0/ref/HotForge.Core.dll
+ HotForge.Linux/obj/Debug/net8.0/ref/HotForge.Linux.dll
 <NUGET>/
  microsoft.codecoverage/17.9.0/lib/netcoreapp3.1/Microsoft.VisualStudio.CodeCoverage.Shim.dll
  microsoft.testplatform.testhost/17.9.0/lib/netcoreapp3.1/
