@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "trigger": { "kind": "hotkey", "args": { "chord": "Ctrl+Alt+H" } },
+      "action": { "kind": "run", "args": { "path": "notepad" } }
+    },
+    {
+      "trigger": { "kind": "hotkey", "args": { "chord": "Ctrl+Alt+T" } },
+      "action": { "kind": "type", "args": { "text": "HotForge was here. " } }
+    }
+  ]
+}

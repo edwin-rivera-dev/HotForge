@@ -1,0 +1,20 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore -c Release
+      # Engine tests are OS-agnostic (FakeBackend); they run on Linux CI.
+      - run: dotnet test tests/HotForge.Core.Tests --no-build -c Release --verbosity normal
+      - run: dotnet format --verify-no-changes

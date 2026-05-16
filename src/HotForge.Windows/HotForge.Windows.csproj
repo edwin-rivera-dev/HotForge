@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>HotForge.Windows</RootNamespace>
+    <AssemblyName>HotForge.Windows</AssemblyName>
+    <!-- The hook P/Invoke is Windows-only; build still succeeds cross-platform
+         for CI since this only references it on Windows at runtime. -->
+    <SupportedOSPlatform>windows</SupportedOSPlatform>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotForge.Core\HotForge.Core.csproj" />
+  </ItemGroup>
+
+</Project>

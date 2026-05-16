@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+*.trx
+.env
+*.swp
+.DS_Store
+config.json

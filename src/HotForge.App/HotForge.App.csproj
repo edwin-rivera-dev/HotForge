@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>HotForge.App</RootNamespace>
+    <AssemblyName>hotforge</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HotForge.Core\HotForge.Core.csproj" />
+    <ProjectReference Include="..\HotForge.Windows\HotForge.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config.sample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
