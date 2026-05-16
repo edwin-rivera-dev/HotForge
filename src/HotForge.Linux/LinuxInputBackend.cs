@@ -179,6 +179,20 @@ public sealed class LinuxInputBackend : IInputBackend
     public void InjectText(string text)
     {
         EnsureUinput();
+
+        // The hotkey's modifiers (e.g. Ctrl+Shift) are still physically held
+        // and were forwarded to the desktop. If we type now, the focused app
+        // sees Ctrl+Shift+<letter> — shortcuts, not text (this is what opened
+        // GTK Inspector / switched windows). Lift the held modifiers for the
+        // duration of the injection, then restore them so the physical hold
+        // state stays consistent until the user actually releases the keys.
+        int[] held;
+        lock (_modLock)
+            held = _heldModifierCodes.ToArray();
+
+        foreach (var mod in held)
+            EmitKey(mod, false);
+
         foreach (var ch in text)
         {
             if (!LinuxKeyMap.TryFromChar(ch, out int code, out bool shift))
@@ -189,6 +203,9 @@ public sealed class LinuxInputBackend : IInputBackend
             EmitKey(code, false);
             if (shift) EmitKey(LinuxKeyMap.KeyLeftShift, false);
         }
+
+        foreach (var mod in held)
+            EmitKey(mod, true);
     }
 
     private void EnsureUinput()
