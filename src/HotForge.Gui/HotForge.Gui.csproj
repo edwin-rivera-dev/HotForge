@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\HotForge.App\config.sample.json" Link="config.sample.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="sample.ahk" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

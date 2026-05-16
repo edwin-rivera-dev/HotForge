@@ -54,16 +54,15 @@ dotnet run --project src/HotForge.App -- src/HotForge.App/config.sample.json
 
 ### Linux setup
 
-The backend needs read access to `/dev/input` and write access to
-`/dev/uinput`. Either run with `sudo`, or grant your user access once:
+The backend needs access to `/dev/input` and `/dev/uinput`, which are
+root-only by default (otherwise Run reports
+`backend unavailable: No readable keyboard devices`). Grant your user
+access once:
 
 ```bash
-sudo usermod -aG input $USER          # then log out and back in
-sudo modprobe uinput
-echo 'uinput' | sudo tee /etc/modules-load.d/uinput.conf
-echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' \
-  | sudo tee /etc/udev/rules.d/99-uinput.rules
-sudo udevadm control --reload-rules && sudo udevadm trigger
+./scripts/setup-linux.sh
+newgrp input            # apply the new group without logging out
+dotnet run --project src/HotForge.Gui
 ```
 
 While a script runs, the keyboard is grabbed exclusively and re-injected;
