@@ -9,11 +9,12 @@ internal sealed class FakeBackend : IInputBackend
     public string Platform => "fake";
     public List<string> Injected { get; } = new();
 
-    public event Action<KeyEvent>? KeyEvent;
+    public Func<KeyEvent, bool>? OnKey { get; set; }
 
     public void Start() { }
 
-    public void Emit(KeyEvent e) => KeyEvent?.Invoke(e);
+    /// <summary>Drive a synthetic event; returns true if a rule consumed it.</summary>
+    public bool Emit(KeyEvent e) => OnKey?.Invoke(e) ?? false;
 
     public void InjectText(string text) => Injected.Add(text);
 

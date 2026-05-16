@@ -3,12 +3,17 @@ using HotForge.Core.Model;
 
 namespace HotForge.Core;
 
-/// <summary>Parses config.json into AutomationRules. Format: see config.sample.json.</summary>
+/// <summary>Parses a HotForge script (.hotforge / JSON) into AutomationRules.</summary>
 public static class ConfigLoader
 {
+    /// <summary>Load and parse a script file from disk.</summary>
     public static IReadOnlyList<AutomationRule> Load(string path)
+        => Parse(File.ReadAllText(path));
+
+    /// <summary>Parse script text directly (e.g. from the GUI editor buffer).</summary>
+    public static IReadOnlyList<AutomationRule> Parse(string scriptText)
     {
-        using var doc = JsonDocument.Parse(File.ReadAllText(path));
+        using var doc = JsonDocument.Parse(scriptText);
         var rules = new List<AutomationRule>();
 
         foreach (var r in doc.RootElement.GetProperty("rules").EnumerateArray())

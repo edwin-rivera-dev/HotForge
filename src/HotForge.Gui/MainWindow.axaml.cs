@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using HotForge.Core;
+using HotForge.Core.Ahk;
 using HotForge.Core.Abstractions;
 using HotForge.Core.Model;
 using HotForge.Linux;
@@ -14,13 +15,21 @@ namespace HotForge.Gui;
 
 public partial class MainWindow : Window
 {
+    private const string Extension = "ahk";
+
+    private const string ScriptTemplate = """
+        ; HotForge script — AutoHotkey syntax
+        ; ^ = Ctrl   ! = Alt   + = Shift   # = Win
+
+        ^!j::Send Hello from HotForge
+        """;
+
     private readonly ObservableCollection<string> _rules = new();
     private readonly ObservableCollection<string> _log = new();
 
-    private IReadOnlyList<AutomationRule> _loadedRules = Array.Empty<AutomationRule>();
     private IInputBackend? _backend;
     private RuleEngine? _engine;
-    private string? _configPath;
+    private string? _scriptPath;
 
     public MainWindow()
     {
@@ -28,52 +37,119 @@ public partial class MainWindow : Window
         RulesList.ItemsSource = _rules;
         LogList.ItemsSource = _log;
 
-<<<<<<< Updated upstream
-        var defaultConfig = Path.Combine(AppContext.BaseDirectory, "config.sample.json");
-        if (File.Exists(defaultConfig))
-            LoadConfig(defaultConfig);
-=======
         // Open the bundled sample as the starting script if present.
-        var sample = Path.Combine(AppContext.BaseDirectory, "sample.ahk");
+        var sample = Path.Combine(AppContext.BaseDirectory, "config.sample.json");
         if (File.Exists(sample))
             OpenPath(sample);
         else
             SetScript(ScriptTemplate, path: null);
->>>>>>> Stashed changes
     }
 
-    private async void OnLoad(object? sender, RoutedEventArgs e)
+    // ---- File: New / Open / Save / Save As --------------------------------
+
+    private void OnNew(object? sender, RoutedEventArgs e)
+        => SetScript(ScriptTemplate, path: null);
+
+    private async void OnOpen(object? sender, RoutedEventArgs e)
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Select a HotForge config",
+            Title = "Open a HotForge script",
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("JSON config") { Patterns = new[] { "*.json" } },
+                new FilePickerFileType("AutoHotkey script") { Patterns = new[] { $"*.{Extension}" } },
+                new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
+                new FilePickerFileType("All files") { Patterns = new[] { "*" } },
             },
         });
 
         var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (path is not null)
-            LoadConfig(path);
+            OpenPath(path);
     }
 
-    private void LoadConfig(string path)
+    private void OnSave(object? sender, RoutedEventArgs e)
+    {
+        if (_scriptPath is null)
+            OnSaveAs(sender, e);
+        else
+            WriteScript(_scriptPath);
+    }
+
+    private async void OnSaveAs(object? sender, RoutedEventArgs e)
+    {
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save HotForge script",
+            SuggestedFileName = $"untitled.{Extension}",
+            DefaultExtension = Extension,
+            FileTypeChoices = new[]
+            {
+                new FilePickerFileType("AutoHotkey script") { Patterns = new[] { $"*.{Extension}" } },
+            },
+        });
+
+        var path = file?.TryGetLocalPath();
+        if (path is not null)
+            WriteScript(path);
+    }
+
+    private void OpenPath(string path)
     {
         try
         {
-            _loadedRules = ConfigLoader.Load(path);
-            _configPath = path;
-            _rules.Clear();
-            foreach (var r in _loadedRules)
-                _rules.Add(Describe(r));
-            StatusBar.Text = $"Loaded {_loadedRules.Count} rule(s) from {Path.GetFileName(path)}.";
+            SetScript(File.ReadAllText(path), path);
+            AppendLog($"opened {Path.GetFileName(path)}");
         }
         catch (Exception ex)
         {
-            AppendLog($"config error: {ex.Message}");
-            StatusBar.Text = "Failed to load config.";
+            AppendLog($"open failed: {ex.Message}");
+        }
+    }
+
+    private void WriteScript(string path)
+    {
+        try
+        {
+            File.WriteAllText(path, ScriptEditor.Text ?? "");
+            _scriptPath = path;
+            EditorHead.Text = $"SCRIPT — {Path.GetFileName(path)}";
+            StatusBar.Text = $"Saved {Path.GetFileName(path)}.";
+            RefreshRules();
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"save failed: {ex.Message}");
+        }
+    }
+
+    private void SetScript(string text, string? path)
+    {
+        ScriptEditor.Text = text;
+        _scriptPath = path;
+        EditorHead.Text = $"SCRIPT — {(path is null ? $"untitled.{Extension}" : Path.GetFileName(path))}";
+        RefreshRules();
+    }
+
+    /// <summary>Re-parse the editor buffer and refresh the rules panel.</summary>
+    private bool RefreshRules()
+    {
+        try
+        {
+            var rules = ParseScript(ScriptEditor.Text ?? "");
+            _rules.Clear();
+            foreach (var r in rules)
+                _rules.Add(Describe(r));
+            StatusBar.Text = $"{rules.Count} rule(s) parsed.";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _rules.Clear();
+            StatusBar.Text = "Script has errors — not runnable.";
+            AppendLog($"script error: {ex.Message}");
+            return false;
         }
     }
 
@@ -86,13 +162,28 @@ public partial class MainWindow : Window
         return $"{chord}   →   {r.ActionKind} {detail}".TrimEnd();
     }
 
+    // ---- Run / Stop -------------------------------------------------------
+
     private void OnStart(object? sender, RoutedEventArgs e)
     {
         if (_engine is not null)
             return;
-        if (_loadedRules.Count == 0)
+
+        IReadOnlyList<AutomationRule> rules;
+        try
         {
-            AppendLog("nothing to run — load a config first.");
+            rules = ParseScript(ScriptEditor.Text ?? "");
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"script error: {ex.Message}");
+            StatusBar.Text = "Fix the script before running.";
+            return;
+        }
+
+        if (rules.Count == 0)
+        {
+            AppendLog("nothing to run — the script has no rules.");
             return;
         }
 
@@ -106,11 +197,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        _engine = new RuleEngine(_backend, _loadedRules, log: AppendLog);
+        _engine = new RuleEngine(_backend, rules, log: AppendLog);
         try
         {
             _engine.Start();
-            SetRunning(true);
+            SetRunning(true, rules.Count);
         }
         catch (InvalidOperationException ex)
         {
@@ -126,22 +217,24 @@ public partial class MainWindow : Window
         _backend?.Dispose();
         _backend = null;
         _engine = null;
-        SetRunning(false);
+        SetRunning(false, 0);
         AppendLog("engine stopped.");
     }
 
-    private void SetRunning(bool running)
+    private void SetRunning(bool running, int ruleCount)
     {
         StartButton.IsEnabled = !running;
         StopButton.IsEnabled = running;
-        LoadButton.IsEnabled = !running;
+        // Editing the script while it runs would desync the live rules.
+        ScriptEditor.IsEnabled = !running;
+        NewButton.IsEnabled = !running;
+        OpenButton.IsEnabled = !running;
+        SaveButton.IsEnabled = !running;
+        SaveAsButton.IsEnabled = !running;
+
         StatusText.Text = running ? "● Running" : "● Stopped";
         StatusText.Foreground = SolidColorBrush.Parse(running ? "#7BE0A8" : "#FF8AA0");
         StatusPill.Background = SolidColorBrush.Parse(running ? "#1F3A2C" : "#3A2530");
-<<<<<<< Updated upstream
-        if (running && _configPath is not null)
-            StatusBar.Text = $"Running {_loadedRules.Count} rule(s) — {Path.GetFileName(_configPath)}.";
-=======
         if (running)
             StatusBar.Text = $"Running {ruleCount} rule(s) — press your hotkeys.";
     }
@@ -158,12 +251,6 @@ public partial class MainWindow : Window
         if (key.Length == 0)
         {
             AppendLog("quick build: enter a key.");
-            return;
-        }
-
-        if ((ScriptEditor.Text ?? string.Empty).TrimStart().StartsWith('{'))
-        {
-            AppendLog("quick build: this is a JSON script — open or start an .ahk script first.");
             return;
         }
 
@@ -203,7 +290,6 @@ public partial class MainWindow : Window
         ArgInput.Text = string.Empty;
         RefreshRules();
         AppendLog($"added: {generated}");
->>>>>>> Stashed changes
     }
 
     private void AppendLog(string line)
