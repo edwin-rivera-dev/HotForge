@@ -28,9 +28,18 @@ public partial class MainWindow : Window
         RulesList.ItemsSource = _rules;
         LogList.ItemsSource = _log;
 
+<<<<<<< Updated upstream
         var defaultConfig = Path.Combine(AppContext.BaseDirectory, "config.sample.json");
         if (File.Exists(defaultConfig))
             LoadConfig(defaultConfig);
+=======
+        // Open the bundled sample as the starting script if present.
+        var sample = Path.Combine(AppContext.BaseDirectory, "sample.ahk");
+        if (File.Exists(sample))
+            OpenPath(sample);
+        else
+            SetScript(ScriptTemplate, path: null);
+>>>>>>> Stashed changes
     }
 
     private async void OnLoad(object? sender, RoutedEventArgs e)
@@ -129,8 +138,72 @@ public partial class MainWindow : Window
         StatusText.Text = running ? "● Running" : "● Stopped";
         StatusText.Foreground = SolidColorBrush.Parse(running ? "#7BE0A8" : "#FF8AA0");
         StatusPill.Background = SolidColorBrush.Parse(running ? "#1F3A2C" : "#3A2530");
+<<<<<<< Updated upstream
         if (running && _configPath is not null)
             StatusBar.Text = $"Running {_loadedRules.Count} rule(s) — {Path.GetFileName(_configPath)}.";
+=======
+        if (running)
+            StatusBar.Text = $"Running {ruleCount} rule(s) — press your hotkeys.";
+    }
+
+    private static IReadOnlyList<AutomationRule> ParseScript(string text)
+    {
+        var t = text.TrimStart();
+        return t.StartsWith('{') ? ConfigLoader.Parse(text) : AhkScript.Parse(text);
+    }
+
+    private void OnInsertRule(object? sender, RoutedEventArgs e)
+    {
+        var key = (KeyInput.Text ?? string.Empty).Trim();
+        if (key.Length == 0)
+        {
+            AppendLog("quick build: enter a key.");
+            return;
+        }
+
+        if ((ScriptEditor.Text ?? string.Empty).TrimStart().StartsWith('{'))
+        {
+            AppendLog("quick build: this is a JSON script — open or start an .ahk script first.");
+            return;
+        }
+
+        var parts = new List<string>();
+        if (ModCtrl.IsChecked == true) parts.Add("Ctrl");
+        if (ModAlt.IsChecked == true) parts.Add("Alt");
+        if (ModShift.IsChecked == true) parts.Add("Shift");
+        if (ModWin.IsChecked == true) parts.Add("Win");
+        parts.Add(key);
+        var chord = string.Join("+", parts);
+
+        var arg = (ArgInput.Text ?? string.Empty).Trim();
+        var rule = ActionBox.SelectedIndex == 0
+            ? new AutomationRule(
+                "hotkey",
+                new Dictionary<string, string> { ["chord"] = chord },
+                "run",
+                new Dictionary<string, string> { ["path"] = arg, ["args"] = string.Empty })
+            : new AutomationRule(
+                "hotkey",
+                new Dictionary<string, string> { ["chord"] = chord },
+                "type",
+                new Dictionary<string, string> { ["text"] = arg });
+
+        var generated = AhkScript.WriteRule(rule);
+        if (generated.Length == 0)
+        {
+            AppendLog($"quick build: '{key}' is not a supported key.");
+            return;
+        }
+
+        var buffer = ScriptEditor.Text ?? string.Empty;
+        if (buffer.Length > 0 && !buffer.EndsWith('\n'))
+            buffer += "\n";
+        ScriptEditor.Text = buffer + generated + "\n";
+        KeyInput.Text = string.Empty;
+        ArgInput.Text = string.Empty;
+        RefreshRules();
+        AppendLog($"added: {generated}");
+>>>>>>> Stashed changes
     }
 
     private void AppendLog(string line)

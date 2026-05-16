@@ -31,6 +31,19 @@ dotnet run --project src/HotForge.App
 # config.sample.json binds Ctrl+Alt+H -> launch notepad
 ```
 
+## Linux setup
+
+The backend needs access to `/dev/input` and `/dev/uinput`, which are
+root-only by default (otherwise Run reports
+`backend unavailable: No readable keyboard devices`). Grant your user access
+once:
+
+```bash
+./scripts/setup-linux.sh
+newgrp input            # apply the new group without logging out
+dotnet run --project src/HotForge.Gui
+```
+
 ## Architecture
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Invariant:
