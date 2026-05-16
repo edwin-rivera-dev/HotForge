@@ -64,9 +64,9 @@ public sealed class LinuxInputBackend : IInputBackend
 
         if (_deviceFds.Count == 0)
             throw new InvalidOperationException(
-                "No readable keyboard devices under /dev/input. Run with read "
-                + "access to /dev/input (add the user to the 'input' group, or "
-                + "run as root).");
+                "No readable keyboard devices under /dev/input. Run "
+                + "./scripts/setup-linux.sh once (then `newgrp input`, or log "
+                + "out and back in), or run as root.");
 
         // Must exist before we grab anything: every non-hotkey keystroke is
         // re-injected here, so a missing uinput would make the keyboard dead.
@@ -198,8 +198,9 @@ public sealed class LinuxInputBackend : IInputBackend
         int fd = open("/dev/uinput", OWriteOnly);
         if (fd < 0)
             throw new InvalidOperationException(
-                "Cannot open /dev/uinput for input injection. Load the 'uinput' "
-                + "module and grant write access (the 'input' group, or root).");
+                "Cannot open /dev/uinput for input injection. Run "
+                + "./scripts/setup-linux.sh once (it loads the 'uinput' module "
+                + "and grants access), or run as root.");
 
         ioctl(fd, UiSetEvBit, EvKey);
         ioctl(fd, UiSetEvBit, EvSyn);
