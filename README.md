@@ -1,3 +1,5 @@
+<img width="974" height="660" alt="image" src="https://github.com/user-attachments/assets/65eab0bb-3e84-4b79-b0b1-5873df647bd1" />
+
 # HotForge
 
 A modern, cross-platform OS automation engine — global hotkeys, hotstrings,
