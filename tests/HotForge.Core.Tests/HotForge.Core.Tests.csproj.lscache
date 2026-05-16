@@ -55,6 +55,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 <NUGET>/microsoft.net.test.sdk/17.9.0/build/netcoreapp3.1/Microsoft.NET.Test.Sdk.Program.cs
  @folderNames=..,..,..,..,..,.nuget,packages,microsoft.net.test.sdk,17.9.0,build,netcoreapp3.1
+AhkParserTests.cs
 FakeBackend.cs
 LinuxKeyMapTests.cs
 obj/Debug/net8.0/

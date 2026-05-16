@@ -6,11 +6,13 @@ using HotForge.Core.Model;
 namespace HotForge.Linux;
 
 /// <summary>
-/// Real Linux input backend: reads normalized key events directly from evdev
-/// character devices (/dev/input/event*) and synthesizes text through a
-/// /dev/uinput virtual keyboard. No X11 or Wayland dependency. Mirrors the
-/// WindowsInputBackend contract; needs read access to /dev/input and write
-/// access to /dev/uinput (typically the 'input' group or root).
+/// Real Linux input backend with AutoHotkey-style suppression. It exclusively
+/// grabs the keyboard character devices (<c>EVIOCGRAB</c> on
+/// <c>/dev/input/event*</c>) and re-injects every keystroke through a
+/// <c>/dev/uinput</c> virtual keyboard — except keys a rule matched, which are
+/// swallowed so the desktop and other apps never see them. No X11 or Wayland
+/// dependency. Needs read access to /dev/input and write access to
+/// /dev/uinput (typically the 'input' group, or root).
 /// </summary>
 public sealed class LinuxInputBackend : IInputBackend
 {
@@ -26,25 +28,33 @@ public sealed class LinuxInputBackend : IInputBackend
     private const ulong UiDevCreate = 0x5501;
     private const ulong UiDevDestroy = 0x5502;
 
+    // _IOW('E', 0x90, int) — exclusive grab of an evdev device.
+    private const ulong EvIocGrab = 0x40044590;
+
     private const int InputEventSize = 24;
     private const int UinputUserDevSize = 1116;
 
     private readonly List<int> _deviceFds = new();
+    private readonly List<int> _grabbedFds = new();
     private readonly List<Thread> _readers = new();
     private readonly HashSet<int> _heldModifierCodes = new();
+    private readonly HashSet<int> _swallowedCodes = new();
     private readonly object _modLock = new();
+    private readonly object _swallowLock = new();
     private int _uinputFd = -1;
     private volatile bool _running;
     private bool _started;
 
     public string Platform => "linux";
 
-    public event Action<KeyEvent>? KeyEvent;
+    public Func<KeyEvent, bool>? OnKey { get; set; }
 
     public void Start()
     {
         if (_started) return;
 
+        // Discover and open the real keyboards *before* creating the uinput
+        // virtual device, so we never grab our own synthetic keyboard.
         foreach (var path in DiscoverKeyboardDevices())
         {
             int fd = open(path, OReadOnly);
@@ -57,6 +67,18 @@ public sealed class LinuxInputBackend : IInputBackend
                 "No readable keyboard devices under /dev/input. Run with read "
                 + "access to /dev/input (add the user to the 'input' group, or "
                 + "run as root).");
+
+        // Must exist before we grab anything: every non-hotkey keystroke is
+        // re-injected here, so a missing uinput would make the keyboard dead.
+        EnsureUinput();
+
+        foreach (var fd in _deviceFds)
+        {
+            if (ioctl(fd, EvIocGrab, 1) == 0)
+                _grabbedFds.Add(fd);
+            // If the grab fails we still read the device — hotkeys fire, but
+            // they leak through to the desktop (no suppression on that device).
+        }
 
         _running = true;
         _started = true;
@@ -80,8 +102,17 @@ public sealed class LinuxInputBackend : IInputBackend
             ushort type = BitConverter.ToUInt16(buf, 16);
             ushort code = BitConverter.ToUInt16(buf, 18);
             int value = BitConverter.ToInt32(buf, 20);
-            if (type != EvKey) continue;
 
+            // Anything that isn't a key press (sync frames, autorepeat config,
+            // misc events) is passed straight through to the virtual keyboard.
+            if (type != EvKey)
+            {
+                Forward(buf);
+                continue;
+            }
+
+            // Modifiers are tracked for chord matching but always forwarded so
+            // combinations still reach applications normally.
             var modifier = LinuxKeyMap.ModifierFor(code);
             if (modifier != KeyModifiers.None)
             {
@@ -90,14 +121,48 @@ public sealed class LinuxInputBackend : IInputBackend
                     if (value == 0) _heldModifierCodes.Remove(code);
                     else _heldModifierCodes.Add(code);
                 }
+                Forward(buf);
                 continue;
             }
 
-            var key = LinuxKeyMap.FromCode(code);
-            if (key == Key.None) continue;
+            if (ShouldSwallow(code, value))
+                continue; // matched a rule — drop it so the OS never sees it
 
-            KeyEvent?.Invoke(new KeyEvent(key, CurrentModifiers(), value != 0));
+            Forward(buf);
         }
+    }
+
+    /// <summary>
+    /// Decide whether this key event was consumed by a rule. A consumed
+    /// key-down is remembered so its autorepeat and key-up are swallowed too,
+    /// leaving no dangling press in the foreground app.
+    /// </summary>
+    private bool ShouldSwallow(int code, int value)
+    {
+        if (value == 1) // key down
+        {
+            var key = LinuxKeyMap.FromCode(code);
+            if (key == Key.None) return false;
+
+            bool consumed = OnKey?.Invoke(new KeyEvent(key, CurrentModifiers(), true)) ?? false;
+            if (consumed)
+                lock (_swallowLock) _swallowedCodes.Add(code);
+            return consumed;
+        }
+
+        // Autorepeat (2) or key up (0): swallow iff the matching down was.
+        lock (_swallowLock)
+        {
+            if (!_swallowedCodes.Contains(code)) return false;
+            if (value == 0) _swallowedCodes.Remove(code);
+            return true;
+        }
+    }
+
+    private void Forward(byte[] rawEvent)
+    {
+        if (_uinputFd >= 0)
+            WriteAll(_uinputFd, rawEvent);
     }
 
     private KeyModifiers CurrentModifiers()
@@ -133,12 +198,14 @@ public sealed class LinuxInputBackend : IInputBackend
         int fd = open("/dev/uinput", OWriteOnly);
         if (fd < 0)
             throw new InvalidOperationException(
-                "Cannot open /dev/uinput for text injection. Load the 'uinput' "
+                "Cannot open /dev/uinput for input injection. Load the 'uinput' "
                 + "module and grant write access (the 'input' group, or root).");
 
         ioctl(fd, UiSetEvBit, EvKey);
         ioctl(fd, UiSetEvBit, EvSyn);
-        for (int c = 1; c < 128; c++)
+        // Enable the full keyboard range so every forwarded keystroke
+        // (function keys, arrows, keypad …) can be replayed, not just ASCII.
+        for (int c = 1; c < 256; c++)
             ioctl(fd, UiSetKeyBit, c);
 
         var dev = new byte[UinputUserDevSize];
@@ -212,6 +279,12 @@ public sealed class LinuxInputBackend : IInputBackend
     public void Dispose()
     {
         _running = false;
+
+        // Release the exclusive grab first so the physical keyboard keeps
+        // working even if teardown below throws.
+        foreach (var fd in _grabbedFds)
+            ioctl(fd, EvIocGrab, 0);
+        _grabbedFds.Clear();
 
         if (_uinputFd >= 0)
         {

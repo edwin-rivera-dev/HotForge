@@ -61,6 +61,13 @@ Abstractions/
 Actions/
  RunProcessAction.cs
  TypeTextAction.cs
+Ahk/
+ AhkAst.cs
+ AhkKeyToken.cs
+ AhkLowering.cs
+ AhkParser.cs
+ AhkScript.cs
+ AhkWriter.cs
 ConfigLoader.cs
 Model/
  AutomationRule.cs

@@ -1,15 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="HotForge.Gui.MainWindow"
-        Width="860" Height="580"
-        MinWidth="640" MinHeight="420"
+        Width="980" Height="660"
+        MinWidth="760" MinHeight="480"
         Title="HotForge"
         Background="#0E0F13"
         FontFamily="Inter, Segoe UI, sans-serif">
 
   <Window.Styles>
     <Style Selector="Button.tool">
-      <Setter Property="Padding" Value="16,9" />
+      <Setter Property="Padding" Value="14,8" />
       <Setter Property="CornerRadius" Value="8" />
       <Setter Property="Background" Value="#1B1D24" />
       <Setter Property="Foreground" Value="#E7E9EE" />
@@ -50,11 +50,21 @@
       <Setter Property="Padding" Value="8,6" />
       <Setter Property="FontSize" Value="13" />
     </Style>
+    <Style Selector="TextBox.editor">
+      <Setter Property="Background" Value="#0B0C10" />
+      <Setter Property="Foreground" Value="#D6D9E0" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="AcceptsReturn" Value="True" />
+      <Setter Property="AcceptsTab" Value="True" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
   </Window.Styles>
 
-  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="22">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="22">
 
-    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
       <StackPanel Grid.Column="0">
         <TextBlock Text="⚡ HotForge" FontSize="26" FontWeight="Bold" Foreground="#F2F3F6" />
         <TextBlock Text="Cross-platform hotkey &amp; automation engine"
@@ -68,29 +78,60 @@
       </Border>
     </Grid>
 
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,0,0,18">
-      <Button x:Name="LoadButton" Classes="tool" Content="Load config…" Click="OnLoad" />
-      <Button x:Name="StartButton" Classes="tool primary" Content="Start" Click="OnStart" />
-      <Button x:Name="StopButton" Classes="tool" Content="Stop" Click="OnStop" IsEnabled="False" />
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,0,0,16">
+      <Button x:Name="NewButton" Classes="tool" Content="New" Click="OnNew" />
+      <Button x:Name="OpenButton" Classes="tool" Content="Open…" Click="OnOpen" />
+      <Button x:Name="SaveButton" Classes="tool" Content="Save" Click="OnSave" />
+      <Button x:Name="SaveAsButton" Classes="tool" Content="Save As…" Click="OnSaveAs" />
+      <Border Width="1" Background="#2A2D37" Margin="6,2" />
+      <Button x:Name="StartButton" Classes="tool primary" Content="▶ Run" Click="OnStart" />
+      <Button x:Name="StopButton" Classes="tool" Content="■ Stop" Click="OnStop" IsEnabled="False" />
     </StackPanel>
 
-    <Grid Grid.Row="2" ColumnDefinitions="*,16,*">
+    <Border Grid.Row="2" Classes="card" Margin="0,0,0,16">
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Classes="cardhead" Text="QUICK BUILD" VerticalAlignment="Center" Margin="0,2,6,2" />
+        <CheckBox x:Name="ModCtrl" Content="Ctrl" />
+        <CheckBox x:Name="ModAlt" Content="Alt" />
+        <CheckBox x:Name="ModShift" Content="Shift" />
+        <CheckBox x:Name="ModWin" Content="Win" />
+        <TextBox x:Name="KeyInput" Width="64" Watermark="Key" />
+        <ComboBox x:Name="ActionBox" Width="104" SelectedIndex="0">
+          <ComboBoxItem>Run</ComboBoxItem>
+          <ComboBoxItem>Type</ComboBoxItem>
+        </ComboBox>
+        <TextBox x:Name="ArgInput" Width="260" Watermark="program to run / text to type" />
+        <Button x:Name="InsertButton" Classes="tool primary" Content="Insert rule" Click="OnInsertRule" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="3" ColumnDefinitions="*,16,340">
       <Border Grid.Column="0" Classes="card">
         <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="LOADED RULES" />
-          <ListBox x:Name="RulesList" />
+          <TextBlock DockPanel.Dock="Top" Classes="cardhead" x:Name="EditorHead"
+                     Text="SCRIPT — untitled.hotforge" />
+          <TextBox x:Name="ScriptEditor" Classes="editor" />
         </DockPanel>
       </Border>
-      <Border Grid.Column="2" Classes="card">
-        <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="ACTIVITY" />
-          <ListBox x:Name="LogList" />
-        </DockPanel>
-      </Border>
+
+      <Grid Grid.Column="2" RowDefinitions="*,12,*">
+        <Border Grid.Row="0" Classes="card">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="LOADED RULES" />
+            <ListBox x:Name="RulesList" />
+          </DockPanel>
+        </Border>
+        <Border Grid.Row="2" Classes="card">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Classes="cardhead" Text="ACTIVITY" />
+            <ListBox x:Name="LogList" />
+          </DockPanel>
+        </Border>
+      </Grid>
     </Grid>
 
-    <TextBlock Grid.Row="3" x:Name="StatusBar" Margin="2,16,0,0"
+    <TextBlock Grid.Row="4" x:Name="StatusBar" Margin="2,14,0,0"
                FontSize="12" Foreground="#6E7484"
-               Text="No config loaded." />
+               Text="New script — write rules, then ▶ Run." />
   </Grid>
 </Window>

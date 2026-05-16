@@ -29,7 +29,7 @@ public sealed class WindowsInputBackend : IInputBackend
 
     public string Platform => "windows";
 
-    public event Action<KeyEvent>? KeyEvent;
+    public Func<KeyEvent, bool>? OnKey { get; set; }
 
     public void Start()
     {
@@ -52,8 +52,13 @@ public sealed class WindowsInputBackend : IInputBackend
             {
                 int vk = Marshal.ReadInt32(lParam);
                 var key = WindowsKeyMap.FromVk(vk);
-                if (key != Key.None)
-                    KeyEvent?.Invoke(new KeyEvent(key, CurrentModifiers(), down));
+                if (key != Key.None
+                    && OnKey?.Invoke(new KeyEvent(key, CurrentModifiers(), down)) == true)
+                {
+                    // A rule matched — swallow it so the foreground app and
+                    // OS shortcuts never see this keystroke.
+                    return (IntPtr)1;
+                }
             }
         }
 
